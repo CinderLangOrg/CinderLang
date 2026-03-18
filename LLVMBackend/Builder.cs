@@ -9,6 +9,7 @@ using LLVMSharp.Interop;
 
 namespace LLVMBackend
 {
+    [Backend("llvm")]
     public class Builder : IBuilder
     {
         public LLVMContextRef context;

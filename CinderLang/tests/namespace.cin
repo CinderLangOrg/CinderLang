@@ -1,10 +1,16 @@
 namespace Test 
 {
+	def testInt() : int
+	{
+		return 5;
+	}
+
 	def main() 
 	{
-		int a = 5;
+		int a = testInt();
 		int b = 10;
 
 		int c = (a + b) * 5;
+		return;
 	}
 }

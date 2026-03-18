@@ -9,7 +9,9 @@ namespace CinderLang
     public enum ErrorType
     {
         Syntax = 2,
-        Generation = 3
+        Generation = 3,
+        Cli = 4,
+        Backend = 5,
     }
 
     public static class ErrorManager

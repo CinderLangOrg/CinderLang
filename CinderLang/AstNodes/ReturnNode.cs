@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LLVMSharp;
 
 namespace CinderLang.AstNodes
 {
@@ -14,7 +15,12 @@ namespace CinderLang.AstNodes
         {
             if (parent is MethodNode method)
             {
-                if (method.Definition.ReturnType.Equals(Program.Builder.VoidType)) Program.Builder.BuildVoidRet();
+                if (method.Definition.ReturnType.Equals(Program.Builder.VoidType))
+                {
+                    if (Name.Trim().Length > 0) ErrorManager.Throw(ErrorType.Syntax, $"Void returns cannot contain a value");
+
+                    Program.Builder.BuildVoidRet();
+                }
                 else
                 {
                     var value = GenerationHelpers.ParseValue(Name, method.Definition.ReturnType,method);
