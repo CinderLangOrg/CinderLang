@@ -12,16 +12,49 @@ namespace CinderLang
         {
             if (args.Length == 0)
             {
-                Console.Error.WriteLine("Usage: CinderLang <input.cin> [--backend=llvm|ccb]");
+                Console.Error.WriteLine("Usage: CinderLang <input.cin> [--backend llvm|ccb] [--backend=llvm|ccb] [-o <out>] [--output <out>] [--output=<out>]");
                 Environment.Exit(1);
             }
 
-            var backendName = args
-                .Skip(1)
-                .FirstOrDefault(a => a.StartsWith("--backend=", StringComparison.OrdinalIgnoreCase))
-                ?.Split('=', 2)[1]
-                ?.Trim()
-                .ToLowerInvariant() ?? "llvm";
+            string backendName = "llvm";
+            string? outputPath = null;
+            for (int i = 1; i < args.Length; i++)
+            {
+                var arg = args[i];
+                if (arg.StartsWith("--backend=", StringComparison.OrdinalIgnoreCase))
+                {
+                    backendName = arg.Split('=', 2)[1].Trim().ToLowerInvariant();
+                    continue;
+                }
+
+                if (string.Equals(arg, "--backend", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (i + 1 >= args.Length)
+                    {
+                        throw new ArgumentException("--backend expects a value: llvm or ccb.");
+                    }
+
+                    backendName = args[++i].Trim().ToLowerInvariant();
+                    continue;
+                }
+
+                if (string.Equals(arg, "-o", StringComparison.Ordinal) ||
+                    string.Equals(arg, "--output", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (i + 1 >= args.Length)
+                    {
+                        throw new ArgumentException($"{arg} expects a file path.");
+                    }
+
+                    outputPath = args[++i].Trim();
+                    continue;
+                }
+
+                if (arg.StartsWith("--output=", StringComparison.OrdinalIgnoreCase))
+                {
+                    outputPath = arg.Split('=', 2)[1].Trim();
+                }
+            }
 
             Builder = backendName switch
             {
@@ -41,10 +74,23 @@ namespace CinderLang
                 if (!item.Module.TryVerify(out var error))
                     ErrorManager.Throw(ErrorType.Generation, $"The namespace \"{item.Name}\" failed to generate in backend '{backendName}': {error}");
 
-                Builder.EmitToFile(item.Name + extension, item.Module);
+                var emitPath = outputPath;
+                if (string.IsNullOrWhiteSpace(emitPath))
+                {
+                    emitPath = item.Name + extension;
+                }
+                else if (namespaces.Length > 1)
+                {
+                    throw new ArgumentException("-o/--output supports a single namespace per compilation. Omit it to emit one file per namespace.");
+                }
 
-                var d = item.Module.PrintToString();
-                Console.WriteLine(d);
+                Builder.EmitToFile(emitPath, item.Module);
+
+                if (string.IsNullOrWhiteSpace(outputPath))
+                {
+                    var d = item.Module.PrintToString();
+                    Console.WriteLine(d);
+                }
             }
         }
     }

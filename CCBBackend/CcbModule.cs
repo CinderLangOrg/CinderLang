@@ -117,7 +117,7 @@ namespace CCBBackend
         public string PrintToString()
         {
             var sb = new StringBuilder();
-            sb.AppendLine("ccbytecode 4");
+            sb.AppendLine("ccbytecode 3");
 
             if (_globalOrder.Count > 0)
             {
