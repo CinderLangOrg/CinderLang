@@ -1,0 +1,66 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using BackendInterface;
+using LLVMSharp.Interop;
+
+namespace CinderLang.AstNodes
+{
+    public class MethodNode : IAstContainerNode
+    {
+        public string Name { get; set; }
+        public IAstNode[] Children { get; set; }
+        public IValue Function { get; set; }
+        public IBlock Alignment { get; set; }
+        public FunctionDefinition Definition { get; set; }
+        public IAstContainerNode Parent { get; set; }
+
+        public List<(IType,string,IValue)> ContextVariables { get; set; } = new();
+
+        public void Generate(IAstNode parent)
+        {
+            if (parent is NameSpaceNode ns)
+            {
+                Parent = ns;
+
+                Definition = GenerationHelpers.ParseFunctionDefinition(Name);
+
+                if (ns.MethodDefinitions.Any(x=>x.Name == Definition.Name)) ErrorManager.Throw(ErrorType.Syntax, $"Method with overload \"{Definition.Name}\" is already defined in namespace \"{ns.Name}\".");
+
+                Function = ns.Module.AddFunction(Definition.Name,Definition.Signature);
+
+                ns.MethodDefinitions.Add(Definition);
+
+                for (uint i = 0; i < Definition.Arguments.Length; i++)
+                {
+                    var item = Definition.Arguments[i];
+
+                    ContextVariables.Add((item.llvmt,item.name,Function.GetParam(i)));
+                }
+
+                Alignment = Function.AppendBasicBlock("start");
+
+                bool HasReturn = Children.Any(c => c is ReturnNode);
+
+                foreach (var child in HasReturn ? Children.Take(Array.IndexOf(Children, Children.First(x => x is ReturnNode)) + 1) : Children) 
+                {
+                    Program.Builder.PositionAtEnd(Alignment);
+                    child.Generate(this); 
+                }
+
+                if (!HasReturn)
+                {
+                    if (Definition.ReturnType.Equals(Program.Builder.VoidType))
+                    {
+                        Program.Builder.PositionAtEnd(Alignment);
+                        Program.Builder.BuildVoidRet();
+                    }
+                    else ErrorManager.Throw(ErrorType.Syntax, "Non-void method must have a return statement.");
+                }
+            }
+            else ErrorManager.Throw(ErrorType.Syntax, "Method must be nested inside a namespace.");
+        }
+    }
+}

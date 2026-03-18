@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CinderLang": {
+      "commandName": "Project",
+      "commandLineArgs": "tests/namespace.cin\r\n"
+    }
+  }
+}

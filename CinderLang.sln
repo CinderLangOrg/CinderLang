@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CinderLang", "CinderLang\CinderLang.csproj", "{62D73D4E-510B-4FE0-9D77-2BF2AC5A702B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackendInterface", "BackendInterface\BackendInterface.csproj", "{D0473B32-D528-49A1-80BA-28BF75A8260E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLVMBackend", "LLVMBackend\LLVMBackend.csproj", "{7D7CEC90-39E8-462F-9FD4-5C70BF487E5D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{62D73D4E-510B-4FE0-9D77-2BF2AC5A702B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62D73D4E-510B-4FE0-9D77-2BF2AC5A702B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62D73D4E-510B-4FE0-9D77-2BF2AC5A702B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62D73D4E-510B-4FE0-9D77-2BF2AC5A702B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0473B32-D528-49A1-80BA-28BF75A8260E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0473B32-D528-49A1-80BA-28BF75A8260E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0473B32-D528-49A1-80BA-28BF75A8260E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0473B32-D528-49A1-80BA-28BF75A8260E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D7CEC90-39E8-462F-9FD4-5C70BF487E5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D7CEC90-39E8-462F-9FD4-5C70BF487E5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D7CEC90-39E8-462F-9FD4-5C70BF487E5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D7CEC90-39E8-462F-9FD4-5C70BF487E5D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
