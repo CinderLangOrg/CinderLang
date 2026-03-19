@@ -13,7 +13,7 @@
 </p>
 
 # Syntax
-## Namespace
+### Namespace
 
 Cinder namespaces behave a lot like go modules. Namepsaces cannot be nested tho can be separated by periods to create categories
 
@@ -29,7 +29,7 @@ namespace MyCategory.MyNs2
 }
 ```
 
-## Functions
+### Functions
 
 In Cinder functions are defined using the `def` folowed by the name and an additional type (if the type is omitted, the default is `void`). 
 Non `void` functions must have a return
@@ -50,7 +50,7 @@ namespace ....
 }
 ```
 
-## Variables
+### Variables
 
 Cinder is a typed language, Which means that all variables must define a type.
 In Cinder variables can be both global and local.
@@ -68,9 +68,12 @@ namespace ....
 }
 ```
 
+# Packages
+&emsp; <img alt="NuGet Version" src="https://img.shields.io/nuget/vpre/cinderlang.backend.interface?style=for-the-badge&label=cinderlang.backend.interface&link=https%3A%2F%2Fwww.nuget.org%2Fpackages%2Fcinderlang.backend.interface%2F">
+
 # Building
 
-## Requirements
+### Requirements
 - dotnet 9.0
 
 1) clone the repository by running `git clone https://github.com/CinderLangOrg/CinderLang.git --recursvie`.
