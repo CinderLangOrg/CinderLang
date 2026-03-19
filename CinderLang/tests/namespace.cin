@@ -1,16 +1,11 @@
 namespace Test 
 {
-	def testInt() : int
-	{
-		return 5;
-	}
+	variadic extern def printf(byte* data) : int;
 
-	def main() 
+	def main() : int 
 	{
-		int a = testInt();
-		int b = 10;
+		printf("Hello World");
 
-		int c = (a + b) * 5;
-		return;
+		return 0;
 	}
 }

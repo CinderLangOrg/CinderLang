@@ -47,7 +47,7 @@ namespace CinderLang
                 if (!item.Module.TryVerify(out var error))
                     ErrorManager.Throw(ErrorType.Generation, $"The namespace \"{item.Name}\" failed to generate, with the LLVM error: {error}");
 
-                Program.Builder.EmitToFile(item.Name + ".asm", item.Module);
+                Program.Builder.EmitToFile(item.Name + ".o", item.Module);
 
                 var d = item.Module.PrintToString();
                 Console.WriteLine(d);

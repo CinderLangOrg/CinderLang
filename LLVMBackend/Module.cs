@@ -16,7 +16,7 @@ namespace LLVMBackend
             module = m;
         }
 
-        public IValue AddFunction(string name, IType definition) => new LLVMValue(module.AddFunction(name, (definition as LLVMType)!.type));
+        public IValue AddFunction(string name, IType definition, bool extenal = false) => new LLVMValue(module.AddFunction(name, (definition as LLVMType)!.type));
 
         public IValue AddGlobal(IType global, string name) => new LLVMValue(module.AddGlobal((global as LLVMType)!.type,name));
         public IValue GetNamedFunction(string name) => new LLVMValue(module.GetNamedFunction(name));

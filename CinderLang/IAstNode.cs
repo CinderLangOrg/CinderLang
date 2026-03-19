@@ -20,4 +20,9 @@ namespace CinderLang
 
         public IAstContainerNode Parent { get; set; }
     }
+
+    public interface IAstAttributeContainerNode : IAstContainerNode
+    {
+        public string[] Attributes { get; set; }
+    }
 }

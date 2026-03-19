@@ -8,7 +8,7 @@ using LLVMSharp.Interop;
 
 namespace CinderLang.AstNodes
 {
-    public class MethodNode : IAstContainerNode
+    public class MethodNode : IAstAttributeContainerNode
     {
         public string Name { get; set; }
         public IAstNode[] Children { get; set; }
@@ -19,17 +19,26 @@ namespace CinderLang.AstNodes
 
         public List<(IType,string,IValue)> ContextVariables { get; set; } = new();
 
+        public string[] Attributes { get; set; }
+
         public void Generate(IAstNode parent)
         {
+            ValidateAttributes();
+            bool isextern = Attributes.Contains("extern");
+            bool isvariadic = Attributes.Contains("variadic");
+
             if (parent is NameSpaceNode ns)
             {
                 Parent = ns;
 
-                Definition = GenerationHelpers.ParseFunctionDefinition(Name);
+                if (Children != null && isextern) ErrorManager.Throw(ErrorType.Syntax, "Extern methods must not have a body");
+                if (Children == null && !isextern) ErrorManager.Throw(ErrorType.Syntax, "Non extern methods must have a body");
+
+                Definition = GenerationHelpers.ParseFunctionDefinition(Name,!isextern,isvariadic);
 
                 if (ns.MethodDefinitions.Any(x=>x.Name == Definition.Name)) ErrorManager.Throw(ErrorType.Syntax, $"Method with overload \"{Definition.Name}\" is already defined in namespace \"{ns.Name}\".");
 
-                Function = ns.Module.AddFunction(Definition.Name,Definition.Signature);
+                Function = ns.Module.AddFunction(Definition.Name,Definition.Signature,isextern);
 
                 ns.MethodDefinitions.Add(Definition);
 
@@ -40,27 +49,37 @@ namespace CinderLang.AstNodes
                     ContextVariables.Add((item.llvmt,item.name,Function.GetParam(i)));
                 }
 
-                Alignment = Function.AppendBasicBlock("start");
-
-                bool HasReturn = Children.Any(c => c is ReturnNode);
-
-                foreach (var child in HasReturn ? Children.Take(Array.IndexOf(Children, Children.First(x => x is ReturnNode)) + 1) : Children) 
+                if (!isextern)
                 {
-                    Program.Builder.PositionAtEnd(Alignment);
-                    child.Generate(this); 
-                }
+                    Alignment = Function.AppendBasicBlock("start");
 
-                if (!HasReturn)
-                {
-                    if (Definition.ReturnType.Equals(Program.Builder.VoidType))
+                    bool HasReturn = Children.Any(c => c is ReturnNode);
+
+                    foreach (var child in HasReturn ? Children.Take(Array.IndexOf(Children, Children.First(x => x is ReturnNode)) + 1) : Children)
                     {
                         Program.Builder.PositionAtEnd(Alignment);
-                        Program.Builder.BuildVoidRet();
+                        child.Generate(this);
                     }
-                    else ErrorManager.Throw(ErrorType.Syntax, "Non-void method must have a return statement.");
+
+                    if (!HasReturn)
+                    {
+                        if (Definition.ReturnType.Equals(Program.Builder.VoidType))
+                        {
+                            Program.Builder.PositionAtEnd(Alignment);
+                            Program.Builder.BuildVoidRet();
+                        }
+                        else ErrorManager.Throw(ErrorType.Syntax, "Non-void method must have a return statement.");
+                    }
                 }
             }
             else ErrorManager.Throw(ErrorType.Syntax, "Method must be nested inside a namespace.");
+        }
+
+        static readonly string[] validattrs = {"extern", "variadic"};
+        void ValidateAttributes()
+        {
+            foreach (var item in Attributes)
+                if (!validattrs.Contains(item)) ErrorManager.Throw(ErrorType.Syntax, $"Ivalid method attributed \"{item}\"");
         }
     }
 }

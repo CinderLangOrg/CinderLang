@@ -5,11 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using CinderLang.AstNodes;
+using LLVMSharp;
+using SixLabors.ImageSharp.Memory;
 
 namespace CinderLang
 {
     public static class Parser
     {
+        public static readonly string[] ValidAttributes = {
+            "extern", "variadic"
+        };
+
         public static NameSpaceNode[] Parse(string code)
         {
             var processed = Preprocessor.Process(code);
@@ -28,6 +34,8 @@ namespace CinderLang
             List<IAstNode> nodes = new List<IAstNode>();
             
             string keyword = "",name = "",buffer = "";
+            List<string> Attributes = new List<string>();
+
             bool isInString = false;
             StringType stringType = StringType.word;
             int stringlenght = 0;
@@ -72,35 +80,53 @@ namespace CinderLang
 
                     if (bracketDepth == 0)
                     {
-                        nodes.Add(GetContainerNode(name.Trim(), keyword.Trim(), buffer.Trim()));
+                        nodes.Add(GetContainerNode(name.Trim(), keyword.Trim(), buffer.Trim(),Attributes.ToArray()));
                         name = "";
                         buffer = "";
                         keyword = "";
+                        Attributes.Clear();
                     }
                 }
                 else if (bracketDepth == 0 && code[i] == ';' && !isInString)
                 {
-                    nodes.Add(GetNode(keyword.Trim(), name.Trim()));
+                    nodes.Add(GetNode(keyword.Trim(), name.Trim(),Attributes.ToArray()));
                     name = "";
                     buffer = "";
                     keyword = "";
+                    Attributes.Clear();
                 }
                 else if (bracketDepth > 0) buffer += code[i];
-                else if (keyword.EndsWith(' ') && keyword.Trim().Length > 0) name += code[i];
+                else if (keyword.EndsWith(' ') && keyword.Trim().Length > 0)
+                {
+                    if (ValidAttributes.Contains(keyword.Trim()))
+                    {
+                        Attributes.Add(keyword.Trim());
+                        keyword = code[i].ToString();
+                    }
+                    else name += code[i];
+                }
                 else keyword += code[i];
             }
 
             return nodes.ToArray();
         }
 
-        static IAstNode GetNode(string keyword, string name)
+        static IAstNode GetNode(string keyword, string name, string[] attribs)
         {
             switch (keyword)
             {
                 case "return":
+                    ReturnAttrError(keyword, attribs.Length);
                     return new ReturnNode
                     {
                         Name = name
+                    };
+                case "def":
+                    return new MethodNode
+                    {
+                        Name = name,
+                        Children = null!,
+                        Attributes = attribs
                     };
                 default:
                     if (GenerationHelpers.IsType(keyword))
@@ -119,11 +145,12 @@ namespace CinderLang
             }
         }
 
-        static IAstContainerNode GetContainerNode(string name, string keyword, string buffer)
+        static IAstContainerNode GetContainerNode(string name, string keyword, string buffer, string[] attribs)
         {
             switch (keyword)
             {
                 case "namespace":
+                    ReturnAttrError(keyword,attribs.Length);
                     return new NameSpaceNode
                     {
                         Name = name,
@@ -133,7 +160,8 @@ namespace CinderLang
                     return new MethodNode
                     {
                         Name = name,
-                        Children = Iterate(buffer)
+                        Children = Iterate(buffer),
+                        Attributes = attribs
                     };
                 default:
                     ErrorManager.Throw(ErrorType.Syntax, $"Invalid keyword \"{keyword}\"");
@@ -141,6 +169,12 @@ namespace CinderLang
             }
 
             return null!;
+        }
+
+        static void ReturnAttrError(string kw,int lenght)
+        {
+            if (lenght > 0)
+                ErrorManager.Throw(ErrorType.Syntax, $"The keyword \"{kw}\" does not allow attributes");
         }
     }
 }

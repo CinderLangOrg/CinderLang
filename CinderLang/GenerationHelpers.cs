@@ -14,16 +14,18 @@ namespace CinderLang
     public struct FunctionDefinition
     {
         public string Name { get; set; }
+        public string RName { get; set; }
         public IType Signature { get; set; }
         public (IType llvmt, string name)[] Arguments { get; set; }
         public IType ReturnType { get; set; }
+        public bool Variadic { get; set; }
     }
 
     public static class GenerationHelpers
     {
         public static List<string> TypeList = ["int","float","double","void","byte"];
 
-        public static FunctionDefinition ParseFunctionDefinition(string name,bool mangle = true)
+        public static FunctionDefinition ParseFunctionDefinition(string name,bool mangle = true,bool variadic = false)
         {
             var def = new FunctionDefinition();
 
@@ -71,18 +73,18 @@ namespace CinderLang
 
             def.ReturnType = GetLLVMType(rtype);
 
-            if (rname == "main" && def.ReturnType.Kind == TypeKind.VoidTypeKind) mangle = false;
-            
-            if (mangle)
-            {
-                var nsPrefix = NameSpaceNode.CurrentNamespace?.Name?.Trim();
-                var coreName = $"{def.ReturnType}.{rname}.{string.Join('.', arguments.Select(x => x.llvmt))}".TrimEnd('.');
-                rname = string.IsNullOrWhiteSpace(nsPrefix) ? coreName : $"{nsPrefix}.{coreName}";
-            }
+            var nsPrefix = NameSpaceNode.CurrentNamespace?.Name?.Trim();
+            var coreName = $"{def.ReturnType}.{rname}.{string.Join('.', arguments.Select(x => x.llvmt))}".TrimEnd('.');
+            def.RName = string.IsNullOrWhiteSpace(nsPrefix) ? coreName : $"{nsPrefix}.{coreName}";
+
+            if (rname == "main" && def.ReturnType.Equals(Program.Builder.Int32Type)) mangle = false;
+
+            if (mangle) rname = def.RName;
 
             def.Arguments = arguments.ToArray();
             def.Name = rname;
-            def.Signature = Program.Builder.CreateFunction(def.ReturnType, def.Arguments.Select(x => x.llvmt).ToArray(), false);
+            def.Signature = Program.Builder.CreateFunction(def.ReturnType, def.Arguments.Select(x => x.llvmt).ToArray(), variadic);
+            def.Variadic = variadic;
 
             return def;
         }
@@ -110,7 +112,8 @@ namespace CinderLang
                     {
                         if (c == ',' && depth == 0)
                         {
-                            args.Add(ParseValue(current.ToString(), llvmt, searchp));
+                            var argType = InferTypeFromValue(current.ToString(), searchp);
+                            args.Add(ParseValue(current.ToString(), argType, searchp, true));
                             current.Clear();
                             continue;
                         }
@@ -122,19 +125,33 @@ namespace CinderLang
                     }
 
                     if (current.Length > 0)
-                        args.Add(ParseValue(current.ToString(), llvmt, searchp));
+                    {
+                        var argType = InferTypeFromValue(current.ToString(), searchp);
+                        args.Add(ParseValue(current.ToString(), argType, searchp, true));
+                    }
                 }
 
                 var nname = (typeKnown ? $"{llvmt}." : "") + $"{fname}.{string.Join(".", args.Select(x => x.TypeOf))}".TrimEnd('.');
                 
                 var method = NameSpaceNode.CurrentNamespace.MethodDefinitions.FirstOrDefault(
-                    m => m.Name.EndsWith(nname),
-                    new() {Name = nname});
+                    m => 
+                    {
+                        if (m.Variadic)
+                        {
+                            var s = "."+args[^1].TypeOf.ToString();
+                            var mname = TrimEndString(nname,s) + s;
+
+                            return m.RName.EndsWith(mname);
+                        }
+
+                        return m.RName.EndsWith(nname);
+                    },
+                    new() {Name = nname,RName = ""});
 
                 nname = method.Name;
 
                 IValue func = NameSpaceNode.CurrentNamespace.Module.GetNamedFunction(nname);
-                if (func.Handle == IntPtr.Zero)
+                if (func.Handle == IntPtr.Zero || method.RName == "")
                     ErrorManager.Throw(ErrorType.Syntax, $"Unknown function \"{fname}\" with overload \"{nname}\"");
 
                 return Program.Builder.BuildCall(method.Signature, func, args.ToArray());
@@ -151,6 +168,15 @@ namespace CinderLang
                 TypeKind.PointerTypeKind => GetPointerData(value),
                 _ => RetInvValue(value)
             };
+        }
+
+        static string TrimEndString(string input, string suffix)
+        {
+            var d = input;
+
+            while (d.EndsWith(suffix)) d = d.Substring(0, d.Length - suffix.Length);
+
+            return d;
         }
 
         static IValue GetIntegerData(IType llvmt, string value)
@@ -184,6 +210,77 @@ namespace CinderLang
                 return Program.Builder.BuildGlobalString(value[1..^1]);
             ErrorManager.Throw(ErrorType.Syntax, $"Invalid pointer value \"{value}\"");
             return null;
+        }
+
+        public static IType InferTypeFromValue(string value, IAstContainerNode scope)
+        {
+            value = value.Trim();
+
+            int parenIndex = value.IndexOf('(');
+            if (parenIndex > 0 && value.EndsWith(")"))
+            {
+                string fname = value[..parenIndex].Trim();
+                string argstr = value[(parenIndex + 1)..^1];
+
+                var argTypes = new List<IType>();
+
+                if (!string.IsNullOrWhiteSpace(argstr))
+                {
+                    int depth = 0;
+                    StringBuilder current = new();
+
+                    foreach (char c in argstr)
+                    {
+                        if (c == ',' && depth == 0)
+                        {
+                            argTypes.Add(InferTypeFromValue(current.ToString(), scope));
+                            current.Clear();
+                            continue;
+                        }
+
+                        if (c == '(') depth++;
+                        if (c == ')') depth--;
+
+                        current.Append(c);
+                    }
+
+                    if (current.Length > 0)
+                        argTypes.Add(InferTypeFromValue(current.ToString(), scope));
+                }
+
+                string signature = $"{fname}.{string.Join(".", argTypes)}";
+
+                var method = NameSpaceNode.CurrentNamespace.MethodDefinitions
+                    .FirstOrDefault(m => m.Name.EndsWith(signature),new FunctionDefinition() { Name = ""});
+
+                if (method.Name == "")
+                    ErrorManager.Throw(ErrorType.Syntax, $"Unknown function \"{fname}\"");
+
+                return method.Signature;
+            }
+
+            if (MathHelper.IsMathExpression(value))
+                return Program.Builder.FloatType;
+
+            if (IsVariable(value, scope))
+                return ResolveVariable(value, scope).Item1;
+
+            if (int.TryParse(value, out _))
+                return Program.Builder.Int32Type;
+
+            if (float.TryParse(value, out _))
+                return Program.Builder.FloatType;
+
+            if (double.TryParse(value, out _))
+                return Program.Builder.DoubleType;
+
+            if (value.StartsWith("\"") && value.EndsWith("\""))
+                return Program.Builder.CreatePointer(Program.Builder.Int8Type);
+
+            //if (value == "true" || value == "false")
+            //    return Program.Builder.Int1Type;
+
+            return Program.Builder.VoidType;
         }
 
         public static bool IsVariable(string name, IAstContainerNode node)
