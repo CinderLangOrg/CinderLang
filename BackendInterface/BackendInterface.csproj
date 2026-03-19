@@ -4,6 +4,15 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackageId>cinderlang.backend.interface</PackageId>
+    <Title>CinderLangBackendInterface</Title>
+    <Company>CinderLangOrg</Company>
+    <Description>general backend interface</Description>
+    <Authors>CinderLangOrg</Authors>
+    <PackageProjectUrl>https://github.com/CinderLangOrg/CinderLang</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/CinderLangOrg/CinderLang</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
 </Project>
