@@ -71,6 +71,8 @@ namespace CinderLang
 
             def.ReturnType = GetLLVMType(rtype);
 
+            if (rname == "main" && def.ReturnType.Kind == TypeKind.VoidTypeKind) mangle = false;
+            
             if (mangle)
             {
                 var nsPrefix = NameSpaceNode.CurrentNamespace?.Name?.Trim();
