@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - 'BackendInterface/**'
+      
+  workflow_dispatch:
 
 jobs:
   build-and-publish:
