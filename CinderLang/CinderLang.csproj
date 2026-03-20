@@ -8,15 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="libLLVM" Version="21.1.8" />
-    <PackageReference Include="libLLVM.runtime.win-x64" Version="21.1.8" />
-    <PackageReference Include="LLVMSharp" Version="20.1.2" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BackendInterface\BackendInterface.csproj" />
-    <ProjectReference Include="..\LLVMBackend\LLVMBackend.csproj" />
+    <ProjectReference Include="..\LLVMBackend\LLVMBackend.csproj">
+		<Private>false</Private>
+		<ExcludeAssets>all</ExcludeAssets>
+	</ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -24,5 +24,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+	
 
 </Project>

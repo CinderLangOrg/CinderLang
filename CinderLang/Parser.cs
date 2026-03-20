@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using CinderLang.AstNodes;
-using LLVMSharp;
 using SixLabors.ImageSharp.Memory;
 
 namespace CinderLang

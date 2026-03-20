@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using BackendInterface;
 using CinderLang.AstNodes;
-using LLVMSharp;
-using LLVMSharp.Interop;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace CinderLang
