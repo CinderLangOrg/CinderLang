@@ -2,9 +2,18 @@ namespace Test
 {
 	variadic extern def printf(byte* data) : int;
 
+	def test(int t) : int
+	{
+		printf("calltest");
+		return t;
+	}
+
 	def main() : int 
 	{
-		printf("Hello, World");
+		byte* st = "tests";
+		byte* pf = st;
+		printf(pf);
+		printf(" ntests");
 
 		return 0;
 	}

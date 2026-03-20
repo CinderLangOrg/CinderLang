@@ -44,7 +44,7 @@ namespace CinderLang.AstNodes
 
                 if (p.Length == 2)
                 {
-                    var data = GenerationHelpers.ParseValue(p[1].Trim(), t,method);
+                    var data = GenerationHelpers.ParseValue(p[1].Trim(), t,method, true, true);
                     Program.Builder.BuildStore(data, s);
                 }
 

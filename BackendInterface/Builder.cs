@@ -37,5 +37,6 @@ namespace BackendInterface
         public IValue BuildMul(IValue a, IValue b, string name = "");
         public IValue BuildFDiv(IValue a, IValue b, string name = "");
         public IValue BuildSDiv(IValue a, IValue b, string name = "");
+        public IValue BuildGEP(IType t, IValue ptr, IValue[] values, string name = "");
     }
 }

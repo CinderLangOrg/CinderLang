@@ -15,9 +15,9 @@ namespace CinderLang.AstNodes
         {
             if (parent is IAstContainerNode method && parent is not NameSpaceNode)
             {
-                var (type, name, value) = GenerationHelpers.ResolveVariable(Name,method);
+                var (type, name, value) = GenerationHelpers.ResolveVariable(Name,method,false);
 
-                var data = GenerationHelpers.ParseValue(Value, type,method);
+                var data = GenerationHelpers.ParseValue(Value, type,method,true,true);
                 Program.Builder.BuildStore(data, value);
             }
             else ErrorManager.Throw(ErrorType.Syntax, "Assign statement must be nested inside a method.");

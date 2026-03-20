@@ -88,7 +88,7 @@ namespace CinderLang
             return def;
         }
 
-        public static IValue ParseValue(string value, IType llvmt, IAstContainerNode searchp, bool typeKnown = true)
+        public static IValue ParseValue(string value, IType llvmt, IAstContainerNode searchp, bool typeKnown = true,bool loadptr = false)
         {
             value = value.Trim();
 
@@ -173,14 +173,14 @@ namespace CinderLang
             }
 
             if (MathHelper.IsMathExpression(value)) return MathHelper.ParseMathExpression(value,llvmt,searchp);
-            if (IsVariable(value, searchp)) return ResolveVariable(value, searchp).Item3;
+            if (IsVariable(value, searchp)) return ResolveVariable(value, searchp,loadptr).Item3;
 
             return llvmt.Kind switch
             {
                 TypeKind.IntegerTypeKind => GetIntegerData(llvmt,value),
                 TypeKind.FloatTypeKind => GetFloatData(llvmt, value),
                 TypeKind.DoubleTypeKind => GetDoubleData(llvmt, value),
-                TypeKind.PointerTypeKind => GetPointerData(value),
+                TypeKind.PointerTypeKind => GetPointerData(value, loadptr),
                 _ => RetInvValue(value)
             };
         }
@@ -219,10 +219,17 @@ namespace CinderLang
             return null;
         }
 
-        static IValue GetPointerData(string value)
+        static IValue GetPointerData(string value,bool load)
         {
             if (value.StartsWith('"') && value.EndsWith('"'))
-                return Program.Builder.BuildGlobalString(value[1..^1]);
+            {
+                if (load)
+                    return Program.Builder.BuildLoad(
+                    Program.Builder.CreatePointer(Program.Builder.Int8Type),
+                    Program.Builder.BuildGlobalString(value[1..^1]));
+                else
+                    return Program.Builder.BuildGlobalString(value[1..^1]);
+            }
             ErrorManager.Throw(ErrorType.Syntax, $"Invalid pointer value \"{value}\"");
             return null;
         }
@@ -294,7 +301,7 @@ namespace CinderLang
                 return Program.Builder.FloatType;
 
             if (IsVariable(value, scope))
-                return ResolveVariable(value, scope).Item1;
+                return ResolveVariable(value, scope,false).Item1;
 
             if (int.TryParse(value, out _))
                 return Program.Builder.Int32Type;
@@ -324,20 +331,20 @@ namespace CinderLang
             return false;
         }
 
-        public static (IType, string, IValue) ResolveVariable(string name,IAstContainerNode node)
+        public static (IType, string, IValue) ResolveVariable(string name,IAstContainerNode node,bool loadptr)
         {
             if (node.ContextVariables.Any(x=>x.Item2 == name))
             {
                 var c = node.ContextVariables.First(x => x.Item2 == name);
 
-                if (c.Item1.Equals(c.Item3.TypeOf))
-                    return c;
+                if (c.Item1.Equals(c.Item3.TypeOf) && c.Item1.Kind != TypeKind.PointerTypeKind) return c;
+                if (c.Item1.Kind == TypeKind.PointerTypeKind && !loadptr) return c;
 
                 return (c.Item1, c.Item2, Program.Builder.BuildLoad(c.Item1, c.Item3));
             }
 
             if (node.Parent != null)
-                return ResolveVariable(name, node.Parent);
+                return ResolveVariable(name, node.Parent,loadptr);
 
             ErrorManager.Throw(ErrorType.Syntax, $"Variable \"{name}\" does not exist");
 

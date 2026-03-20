@@ -126,5 +126,13 @@ namespace LLVMBackend
             new LLVMValue(builder.BuildFDiv(LLVMValue.ToLLVM(a), LLVMValue.ToLLVM(b)));
         public IValue BuildSDiv(IValue a, IValue b, string name = "") =>
             new LLVMValue(builder.BuildSDiv(LLVMValue.ToLLVM(a), LLVMValue.ToLLVM(b)));
+
+        public IValue BuildGEP(IType t,IValue ptr, IValue[] values,string name = "") =>
+            new LLVMValue(
+                builder.BuildGEP2(
+                    LLVMType.ToLLVM(t),
+                    LLVMValue.ToLLVM(ptr),
+                    values.Select(x => (x as LLVMValue)!.Value).ToArray(),
+                    name));
     }
 }
