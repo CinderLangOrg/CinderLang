@@ -29,8 +29,6 @@ namespace CinderLang
         {
             if (args.Length == 0) { ErrorManager.Throw(ErrorType.Cli, "Invalid arguments number for build"); return; }
 
-            //new LLVMBackend.Block(null); // this tells c# to load the llvm backend
-
             var project = args[0];
 
             var BackendName = "llvm";
