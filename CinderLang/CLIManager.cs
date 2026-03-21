@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BackendInterface;
+using CinderLang.AstNodes;
 
 namespace CinderLang
 {
@@ -41,7 +42,13 @@ namespace CinderLang
 
             Program.Builder = (IBuilder)Activator.CreateInstance(BackendT)!;
 
-            var namespaces = Parser.Parse(File.ReadAllText(project));
+            var proj = ProjectManager.LoadProject(project);
+            var namespaces = new List<NameSpaceNode>();
+
+            foreach (var item in Directory.GetFiles(proj.SrcDir, "*.cin", proj.SearchOpt))
+                namespaces.AddRange(Parser.Parse(File.ReadAllText(item)));
+
+            if (!Directory.Exists(proj.OutDir)) Directory.CreateDirectory(proj.OutDir);
 
             foreach (var item in namespaces)
             {
@@ -50,7 +57,7 @@ namespace CinderLang
                 if (!item.Module.TryVerify(out var error))
                     ErrorManager.Throw(ErrorType.Generation, $"The namespace \"{item.Name}\" failed to generate, with the LLVM error: {error}");
 
-                Program.Builder.EmitToFile(item.Name + ".o", item.Module);
+                Program.Builder.EmitToFile(Path.Combine(proj.OutDir, item.Name + ".o"), item.Module);
 
                 var d = item.Module.PrintToString();
                 Console.WriteLine(d);
@@ -74,8 +81,8 @@ namespace CinderLang
 
         public static void PrintHelp(string command)
         {
-            Console.WriteLine("build---------| Compiles a .ciproj file");
-            Console.WriteLine("help----------| Shows this message");
+            Console.WriteLine("build - - - - | Compiles a .ciproj file");
+            Console.WriteLine("help  - - - - | Shows this message");
         }
     }
 }

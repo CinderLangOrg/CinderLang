@@ -2,7 +2,7 @@
   "profiles": {
     "CinderLang": {
       "commandName": "Project",
-      "commandLineArgs": "build tests/namespace.cin\r\n"
+      "commandLineArgs": "build tests/testproj.ciproj"
     }
   }
 }

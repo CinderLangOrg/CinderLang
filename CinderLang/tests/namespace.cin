@@ -10,10 +10,7 @@ namespace Test
 
 	def main() : int 
 	{
-		byte* st = "tests";
-		byte* pf = st;
-		printf(pf);
-		printf(" ntests");
+		printf("shit");
 
 		return 0;
 	}

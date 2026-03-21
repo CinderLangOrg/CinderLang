@@ -173,11 +173,20 @@ namespace CinderLang
             }
 
             if (MathHelper.IsMathExpression(value)) return MathHelper.ParseMathExpression(value,llvmt,searchp);
+
+            bool isaddress = false;
+            if (value.StartsWith('&'))
+            {
+                value = value.Substring(1).Trim();
+                loadptr = false;
+                isaddress = true;
+            }
+
             if (IsVariable(value, searchp)) return ResolveVariable(value, searchp,loadptr).Item3;
 
             return llvmt.Kind switch
             {
-                TypeKind.IntegerTypeKind => GetIntegerData(llvmt,value),
+                TypeKind.IntegerTypeKind => GetIntegerData(llvmt,value, isaddress),
                 TypeKind.FloatTypeKind => GetFloatData(llvmt, value),
                 TypeKind.DoubleTypeKind => GetDoubleData(llvmt, value),
                 TypeKind.PointerTypeKind => GetPointerData(value, loadptr),
@@ -194,8 +203,11 @@ namespace CinderLang
             return d;
         }
 
-        static IValue GetIntegerData(IType llvmt, string value)
+        static IValue GetIntegerData(IType llvmt, string value,bool isAddress)
         {
+            if (isAddress)
+                return Program.Builder.BuildIntToPtr(GetIntegerData(llvmt,value,false),llvmt);
+
             if (ulong.TryParse(value, out var v))
                 return Program.Builder.CreateConstInt(llvmt, v, false);
             else if (value.StartsWith('\'') && value.EndsWith('\''))
@@ -221,6 +233,8 @@ namespace CinderLang
 
         static IValue GetPointerData(string value,bool load)
         {
+            if (ulong.TryParse(value, out _) && !load) return GetIntegerData(Program.Builder.Int32Type,value,true);
+
             if (value.StartsWith('"') && value.EndsWith('"'))
             {
                 if (load)
@@ -303,17 +317,27 @@ namespace CinderLang
             if (IsVariable(value, scope))
                 return ResolveVariable(value, scope,false).Item1;
 
+            var address = false;
+
+            if (value.StartsWith('&'))
+            {
+                value = value.Substring(1).Trim();
+                address = true;
+            }
+
+            if (value.StartsWith("\"") && value.EndsWith("\""))
+                return Program.Builder.CreatePointer(Program.Builder.Int8Type);
+
             if (int.TryParse(value, out _))
                 return Program.Builder.Int32Type;
+
+            if (address) ErrorManager.Throw(ErrorType.Syntax, $"Only strings and integers can be used as addresses");
 
             if (float.TryParse(value, out _))
                 return Program.Builder.FloatType;
 
             if (double.TryParse(value, out _))
                 return Program.Builder.DoubleType;
-
-            if (value.StartsWith("\"") && value.EndsWith("\""))
-                return Program.Builder.CreatePointer(Program.Builder.Int8Type);
 
             if (value == "true" || value == "false")
                 return Program.Builder.Int1Type;
@@ -337,8 +361,7 @@ namespace CinderLang
             {
                 var c = node.ContextVariables.First(x => x.Item2 == name);
 
-                if (c.Item1.Equals(c.Item3.TypeOf) && c.Item1.Kind != TypeKind.PointerTypeKind) return c;
-                if (c.Item1.Kind == TypeKind.PointerTypeKind && !loadptr) return c;
+                if (!loadptr) return c;
 
                 return (c.Item1, c.Item2, Program.Builder.BuildLoad(c.Item1, c.Item3));
             }

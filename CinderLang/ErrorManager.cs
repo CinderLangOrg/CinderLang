@@ -12,6 +12,7 @@ namespace CinderLang
         Generation = 3,
         Cli = 4,
         Backend = 5,
+        Project = 6,
     }
 
     public static class ErrorManager

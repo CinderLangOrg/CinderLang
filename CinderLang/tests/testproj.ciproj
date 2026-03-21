@@ -1,0 +1,4 @@
+<Project backend="llvm">
+	<SourceDir recursive="true">./</SourceDir>
+	<OutputDir>../output</OutputDir>
+</Project>
