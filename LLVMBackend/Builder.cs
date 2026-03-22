@@ -137,5 +137,16 @@ namespace LLVMBackend
 
         public IValue BuildIntToPtr(IValue val,IType t,string name = "") =>
             new LLVMValue(builder.BuildIntToPtr(LLVMValue.ToLLVM(val),LLVMType.ToLLVM(t),name));
+        public IValue BuildICmp(ComparationPredicate predicate,IValue a, IValue b, string name = "") =>
+            new LLVMValue(
+                builder.BuildICmp(
+                    (LLVMIntPredicate)predicate,
+                    LLVMValue.ToLLVM(a),
+                    LLVMValue.ToLLVM(b),
+                    name));
+        public IValue BuildBr(IBlock block, string name = "") => new LLVMValue(builder.BuildBr((block as Block)!.block));
+        public IValue BuildCondBr(IValue If,IBlock Then, IBlock Else) =>
+            new LLVMValue(builder.BuildCondBr(LLVMValue.ToLLVM(If), (Then as Block)!.block, (Else as Block)!.block));
+
     }
 }

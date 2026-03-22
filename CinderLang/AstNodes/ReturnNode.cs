@@ -12,8 +12,10 @@ namespace CinderLang.AstNodes
 
         public void Generate(IAstNode parent)
         {
-            if (parent is MethodNode method)
+            if (parent is IAstContainerNode)
             {
+                var method = MethodNode.CurrentMethod;
+
                 if (method.Definition.ReturnType.Equals(Program.Builder.VoidType))
                 {
                     if (Name.Trim().Length > 0) ErrorManager.Throw(ErrorType.Syntax, $"Void returns cannot contain a value");

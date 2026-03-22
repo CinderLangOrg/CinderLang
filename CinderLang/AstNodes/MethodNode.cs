@@ -20,6 +20,8 @@ namespace CinderLang.AstNodes
 
         public string[] Attributes { get; set; }
 
+        public static MethodNode CurrentMethod { get; private set; }
+
         public void Generate(IAstNode parent)
         {
             ValidateAttributes();
@@ -40,6 +42,8 @@ namespace CinderLang.AstNodes
                 Function = ns.Module.AddFunction(Definition.Name,Definition.Signature,isextern);
 
                 ns.MethodDefinitions.Add(Definition);
+
+                CurrentMethod = this;
 
                 for (uint i = 0; i < Definition.Arguments.Length; i++)
                 {

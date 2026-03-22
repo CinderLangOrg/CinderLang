@@ -39,5 +39,8 @@ namespace BackendInterface
         public IValue BuildSDiv(IValue a, IValue b, string name = "");
         public IValue BuildGEP(IType t, IValue ptr, IValue[] values, string name = "");
         public IValue BuildIntToPtr(IValue val, IType t, string name = "");
+        public IValue BuildICmp(ComparationPredicate predicate, IValue a, IValue b, string name = "");
+        public IValue BuildBr(IBlock block, string name = "");
+        public IValue BuildCondBr(IValue If, IBlock Then, IBlock Else);
     }
 }

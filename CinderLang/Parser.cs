@@ -162,6 +162,16 @@ namespace CinderLang
                         Children = Iterate(buffer),
                         Attributes = attribs
                     };
+                case "if":
+                    ReturnAttrError(keyword, attribs.Length);
+
+                    if (!name.StartsWith('(') || !name.EndsWith(')')) ErrorManager.Throw(ErrorType.Syntax,"If condition must be inside parenthesis");
+
+                    return new IfConditionNode
+                    {
+                        Name = name[1..^1],
+                        Children = Iterate(buffer),
+                    };
                 default:
                     ErrorManager.Throw(ErrorType.Syntax, $"Invalid keyword \"{keyword}\"");
                     break;

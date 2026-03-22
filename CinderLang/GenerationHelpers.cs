@@ -22,7 +22,7 @@ namespace CinderLang
 
     public static class GenerationHelpers
     {
-        public static List<string> TypeList = ["int","float","double","void","byte"];
+        public static List<string> TypeList = ["int","float","double","void","byte","bool"];
 
         public static FunctionDefinition ParseFunctionDefinition(string name,bool mangle = true,bool variadic = false)
         {
@@ -186,7 +186,7 @@ namespace CinderLang
 
             return llvmt.Kind switch
             {
-                TypeKind.IntegerTypeKind => GetIntegerData(llvmt,value, isaddress),
+                TypeKind.IntegerTypeKind => GetIntegerData(llvmt, searchp, value, isaddress),
                 TypeKind.FloatTypeKind => GetFloatData(llvmt, value),
                 TypeKind.DoubleTypeKind => GetDoubleData(llvmt, value),
                 TypeKind.PointerTypeKind => GetPointerData(value, loadptr),
@@ -203,15 +203,57 @@ namespace CinderLang
             return d;
         }
 
-        static IValue GetIntegerData(IType llvmt, string value,bool isAddress)
+        static IValue BuildComparison(IValue lhs, IValue rhs, string op, bool isSigned = true)
+        {
+            var predicate = op switch
+            {
+                "==" => ComparationPredicate.Equal,
+                "!=" => ComparationPredicate.NotEqual,
+                ">" => isSigned ? ComparationPredicate.SGreater : ComparationPredicate.UGreater,
+                ">=" => isSigned ? ComparationPredicate.SGreaterEqual : ComparationPredicate.UGreaterEqual,
+                "<" => isSigned ? ComparationPredicate.SLess : ComparationPredicate.ULess,
+                "<=" => isSigned ? ComparationPredicate.SLessEqual : ComparationPredicate.ULessEqual,
+                _ => RetInvCompare(op)
+            };
+
+            return Program.Builder.BuildICmp(predicate, lhs, rhs);
+        }
+        static bool TryParseComparison(string value, IAstContainerNode searchp, out IValue cmp)
+        {
+            string[] operators = { "==", "!=", ">=", "<=", ">", "<" };
+
+            cmp = null!;
+
+            foreach (var op in operators)
+            {
+                var parts = value.Split(op, 2, StringSplitOptions.TrimEntries);
+                if (parts.Length != 2) continue;
+
+                var lhsVal = ParseValue(parts[0],InferTypeFromValue(parts[0], searchp),searchp);
+                var rhsVal = ParseValue(parts[1], InferTypeFromValue(parts[1], searchp),searchp);
+
+                if (lhsVal == null || rhsVal == null) return false;
+
+                cmp = BuildComparison(lhsVal, rhsVal, op);
+                return true;
+            }
+
+            return false;
+        }
+
+        static IValue GetIntegerData(IType llvmt, IAstContainerNode searchp, string value,bool isAddress)
         {
             if (isAddress)
-                return Program.Builder.BuildIntToPtr(GetIntegerData(llvmt,value,false),llvmt);
+                return Program.Builder.BuildIntToPtr(GetIntegerData(llvmt,searchp,value,false),llvmt);
 
             if (ulong.TryParse(value, out var v))
                 return Program.Builder.CreateConstInt(llvmt, v, false);
             else if (value.StartsWith('\'') && value.EndsWith('\''))
                 return Program.Builder.CreateConstInt(llvmt, value[1], false);
+            else if (llvmt.Equals(Program.Builder.Int1Type) && TryParseComparison(value,searchp, out var cmp))
+                return cmp;
+            else if (value == "true") return Program.Builder.CreateConstInt(llvmt, 1, false);
+            else if (value == "false") return Program.Builder.CreateConstInt(llvmt, 0, false);
 
             ErrorManager.Throw(ErrorType.Syntax, $"Invalid integer value \"{value}\"");
             return null;
@@ -233,7 +275,7 @@ namespace CinderLang
 
         static IValue GetPointerData(string value,bool load)
         {
-            if (ulong.TryParse(value, out _) && !load) return GetIntegerData(Program.Builder.Int32Type,value,true);
+            if (ulong.TryParse(value, out _) && !load) return GetIntegerData(Program.Builder.Int32Type,null!,value,true);
 
             if (value.StartsWith('"') && value.EndsWith('"'))
             {
@@ -379,6 +421,11 @@ namespace CinderLang
             ErrorManager.Throw(ErrorType.Syntax, $"Invalid value \"{value}\"");
             return null;
         }
+        static ComparationPredicate RetInvCompare(string value)
+        {
+            ErrorManager.Throw(ErrorType.Syntax, $"Invalid comparation operator \"{value}\"");
+            return ComparationPredicate.Equal;
+        }
 
         static IType RetInvType(string type)
         {
@@ -415,6 +462,7 @@ namespace CinderLang
                 "double" => Program.Builder.DoubleType,
                 "void" => Program.Builder.VoidType,
                 "byte" => Program.Builder.Int8Type,
+                "bool" => Program.Builder.Int1Type,
                 _ => RetInvType(type),
             };
 
