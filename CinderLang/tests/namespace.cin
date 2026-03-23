@@ -13,7 +13,12 @@ namespace Test
 		int a = 7;
 		int b = 7;
 
-		if (a==b) printf("hi");
+		if (a == b) printf("option 1");
+		else if (a != b)
+		{
+			printf("option2");
+		}
+		else printf("option 3");
 
 		return 0;
 	}

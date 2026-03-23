@@ -28,23 +28,35 @@ namespace CinderLang.AstNodes
 
                 var tidx = Array.IndexOf(container.Children,this);
 
-                if (tidx == 0 || (container.Children[tidx-1] is not IfConditionNode cmp)) ErrorManager.Throw(ErrorType.Syntax, "Else statement must be preceaded by an if.");
-                else
+                Console.WriteLine(container.Children[tidx - 1]);
+
+                void th() => ErrorManager.Throw(ErrorType.Syntax, "Else statement must be preceded by an if.");
+
+                IfConditionNode cmp = null!;
+
+                if (tidx == 0) th();
+                else if (container.Children[tidx - 1] is IfConditionNode rcmp) cmp = rcmp;
+                else if (container.Children[tidx - 1] is ElseConditionNode ecmp)
                 {
-                    cmp.Else.RemoveTerminator();
-
-                    ifcond = cmp;
-                    ContinueBlock = cmp.Else;
-
-                    foreach (var item in Children)
-                    {
-                        Program.Builder.PositionAtHead(cmp.Else);
-                        item.Generate(this);
-                    }
-
-                    Program.Builder.PositionAtEnd(ifcond.Else);
-                    Program.Builder.BuildBr(ifcond.ContinueBlock);
+                    if (ecmp.Children.Length == 1 && ecmp.Children[0] is IfConditionNode ic)
+                        cmp = ic;
+                    else ErrorManager.Throw(ErrorType.Syntax, "If statement cannot have two else statements.");
                 }
+                else th();
+
+                cmp.Else.RemoveTerminator();
+
+                ifcond = cmp;
+                ContinueBlock = cmp.Else;
+
+                foreach (var item in Children)
+                {
+                    Program.Builder.PositionAtHead(cmp.Else);
+                    item.Generate(this);
+                }
+
+                Program.Builder.PositionAtEnd(ifcond.Else);
+                Program.Builder.BuildBr(ifcond.ContinueBlock);
             }
             else ErrorManager.Throw(ErrorType.Syntax, "Else statement must be nested.");
         }
