@@ -2,14 +2,15 @@ namespace Test
 {
 	variadic extern def printf(byte* data) : int;
 
-	def test(int t) : int
+	def test()
 	{
 		printf("calltest");
-		return t;
 	}
 
 	def main() : int 
 	{
+		test();
+
 		int a = 7;
 		int b = 7;
 

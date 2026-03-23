@@ -151,7 +151,7 @@ namespace CinderLang
                 var method = NameSpaceNode.CurrentNamespace.MethodDefinitions.FirstOrDefault(
                     m => 
                     {
-                        if (m.Variadic)
+                        if (m.Variadic && args.Count > 0)
                         {
                             var s = "."+args[^1].TypeOf.ToString();
                             var mname = TrimEndString(nname,s) + s;
