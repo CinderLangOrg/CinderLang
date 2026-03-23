@@ -24,9 +24,3 @@ namespace Test
 		return 0;
 	}
 }
-
-namespace Test.test1 {}
-namespace Test.test2 {}
-namespace Test.test3 {}
-namespace Test.test4 {}
-namespace Test.test5 {}

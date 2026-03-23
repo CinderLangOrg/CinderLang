@@ -55,19 +55,23 @@ namespace CinderLang
             var count = namespaces.Count;
             var compleated = 0;
 
-            Console.WriteLine("\n\n\n\n\n\n");
+            Console.WriteLine("\n\n\n\n\n\n\n");
             Console.CursorTop -= 7;
 
             Console.CursorVisible = false;
 
             foreach (var item in namespaces)
             {
+                Console.CursorTop += 8;
+
                 item.Generate(null!);
 
                 if (!item.Module.TryVerify(out var error))
                     ErrorManager.Throw(ErrorType.Generation, $"The namespace \"{item.Name}\" failed to generate, with the LLVM error: {error}");
 
                 Program.Builder.EmitToFile(Path.Combine(proj.OutDir, item.Name + ".o"), item.Module);
+
+                Console.CursorTop -= 8;
 
                 compleated++;
 
@@ -77,9 +81,7 @@ namespace CinderLang
 
             Console.CursorVisible = true;
 
-            Console.CursorTop += 7;
-
-            Console.WriteLine();
+            Console.CursorTop += 8;
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"Compiled {namespaces.Count} namespaces");
