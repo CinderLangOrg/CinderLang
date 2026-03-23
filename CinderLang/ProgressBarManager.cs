@@ -32,7 +32,8 @@ namespace CinderLang
                 if (psize != w)
                 {
                     Console.BackgroundColor = ConsoleColor.DarkGray;
-                    Console.Write(new string(' ', w));
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.Write(new string('-', w));
                     Console.ResetColor();
 
                     strcurloc = Console.CursorLeft;
@@ -43,10 +44,11 @@ namespace CinderLang
                 }
 
                 Console.BackgroundColor = ConsoleColor.DarkBlue;
+                Console.ForegroundColor = ConsoleColor.DarkBlue;
 
                 int pelem = (int)(((float)percent / 100f) * w);
 
-                Console.Write(new string(' ', pelem));
+                Console.Write(new string('#', pelem));
                 Console.ResetColor();
 
                 Console.CursorLeft = strcurloc;
