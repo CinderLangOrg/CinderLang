@@ -218,7 +218,7 @@ namespace CinderLang
 
             return Program.Builder.BuildICmp(predicate, lhs, rhs);
         }
-        static bool TryParseComparison(string value, IAstContainerNode searchp, out IValue cmp)
+        static bool TryParseComparison(string value, IAstContainerNode searchp,bool isAddress, out IValue cmp)
         {
             string[] operators = { "==", "!=", ">=", "<=", ">", "<" };
 
@@ -229,8 +229,8 @@ namespace CinderLang
                 var parts = value.Split(op, 2, StringSplitOptions.TrimEntries);
                 if (parts.Length != 2) continue;
 
-                var lhsVal = ParseValue(parts[0],InferTypeFromValue(parts[0], searchp),searchp);
-                var rhsVal = ParseValue(parts[1], InferTypeFromValue(parts[1], searchp),searchp);
+                var lhsVal = ParseValue(parts[0],InferTypeFromValue(parts[0], searchp),searchp,true, !isAddress);
+                var rhsVal = ParseValue(parts[1], InferTypeFromValue(parts[1], searchp),searchp,true,!isAddress);
 
                 if (lhsVal == null || rhsVal == null) return false;
 
@@ -250,7 +250,7 @@ namespace CinderLang
                 return Program.Builder.CreateConstInt(llvmt, v, false);
             else if (value.StartsWith('\'') && value.EndsWith('\''))
                 return Program.Builder.CreateConstInt(llvmt, value[1], false);
-            else if (llvmt.Equals(Program.Builder.Int1Type) && TryParseComparison(value,searchp, out var cmp))
+            else if (llvmt.Equals(Program.Builder.Int1Type) && TryParseComparison(value,searchp,isAddress, out var cmp))
                 return cmp;
             else if (value == "true") return Program.Builder.CreateConstInt(llvmt, 1, false);
             else if (value == "false") return Program.Builder.CreateConstInt(llvmt, 0, false);

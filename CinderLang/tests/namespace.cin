@@ -10,10 +10,10 @@ namespace Test
 
 	def main() : int 
 	{
-		int a = 5;
+		int a = 7;
 		int b = 7;
 
-		if (a==a) printf("hi");
+		if (a==b) printf("hi");
 
 		return 0;
 	}
