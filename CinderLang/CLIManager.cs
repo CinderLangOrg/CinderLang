@@ -16,7 +16,14 @@ namespace CinderLang
         {
             NoGraphics = args.Contains("--no-graphics");
 
-            if (!NoGraphics) DrawCompilerHead.DrawHead();
+            if (!NoGraphics)
+            {
+                try
+                {
+                    DrawCompilerHead.DrawHead();
+                }
+                catch { NoGraphics = true; }
+            }
 
             if (args.Length == 0) { PrintUsage(); return; }
 
@@ -67,8 +74,7 @@ namespace CinderLang
 
             foreach (var item in namespaces)
             {
-                if (!NoGraphics)
-                    Console.CursorTop += 8;
+                if (!NoGraphics) Console.CursorTop += 8;
 
                 item.Generate(null!);
 
@@ -80,8 +86,7 @@ namespace CinderLang
 
                 Program.Builder.EmitToFile(Path.Combine(proj.OutDir, item.Name + ".o"), item.Module);
 
-                if (!NoGraphics)
-                    Console.CursorTop -= 8;
+                if (!NoGraphics) Console.CursorTop -= 8;
 
                 compleated++;
 
@@ -94,8 +99,7 @@ namespace CinderLang
 
             Console.CursorVisible = true;
 
-            if (!NoGraphics)
-                Console.CursorTop += 8;
+            if (!NoGraphics) Console.CursorTop += 8;
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"Compiled {namespaces.Count} namespaces");
