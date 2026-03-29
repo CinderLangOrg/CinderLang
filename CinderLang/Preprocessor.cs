@@ -10,7 +10,7 @@ namespace CinderLang
     {
         public static string Process(string code)
         {
-            return code.Replace(Environment.NewLine," ").Replace("\t","");
+            return code.Replace(Environment.NewLine," ").Replace("\t","").Replace("(", " (").Replace(")", ") ");
         }
     }
 }

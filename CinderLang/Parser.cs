@@ -19,7 +19,7 @@ namespace CinderLang
         {
             var processed = Preprocessor.Process(code);
 
-            var it = Iterate(code);
+            var it = Iterate(processed);
 
             NameSpaceNode[] nodes = new NameSpaceNode[it.Length];
 

@@ -72,6 +72,8 @@ namespace CinderLang
 
             def.ReturnType = GetLLVMType(rtype);
 
+            rname = rname.Trim();
+
             var nsPrefix = NameSpaceNode.CurrentNamespace?.Name?.Trim();
             var coreName = $"{def.ReturnType}.{rname}.{string.Join('.', arguments.Select(x => x.llvmt))}".TrimEnd('.');
             def.RName = string.IsNullOrWhiteSpace(nsPrefix) ? coreName : $"{nsPrefix}.{coreName}";
