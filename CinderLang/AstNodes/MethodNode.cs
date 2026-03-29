@@ -21,6 +21,7 @@ namespace CinderLang.AstNodes
         public string[] Attributes { get; set; }
 
         public static MethodNode CurrentMethod { get; private set; }
+        public bool HasBreak { get; set; }
 
         public void Generate(IAstNode parent)
         {
@@ -56,15 +57,15 @@ namespace CinderLang.AstNodes
                 {
                     Alignment = Function.AppendBasicBlock("start");
 
-                    bool HasReturn = Children.Any(c => c is ReturnNode);
-
-                    foreach (var child in HasReturn ? Children.Take(Array.IndexOf(Children, Children.First(x => x is ReturnNode)) + 1) : Children)
+                    foreach (var child in Children!)
                     {
                         Program.Builder.PositionAtEnd(Alignment);
                         child.Generate(this);
+
+                        if (HasBreak) break;
                     }
 
-                    if (!HasReturn)
+                    if (!HasBreak)
                     {
                         if (Definition.ReturnType.Equals(Program.Builder.VoidType))
                         {

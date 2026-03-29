@@ -127,35 +127,35 @@ namespace CinderLang
                         Children = null!,
                         Attributes = attribs
                     };
+                case "break":
+                    ReturnAttrError(keyword, attribs.Length);
+
+                    if (name.Trim().Length > 0) ErrorManager.Throw(ErrorType.Syntax, "Break statements cannot contain a value");
+
+                    return new BreakerNode();
                 case "if":
                     ReturnAttrError(keyword, attribs.Length);
 
                     if (!name.StartsWith('(')) ErrorManager.Throw(ErrorType.Syntax, "If condition must be inside parenthesis");
 
-                    int pdepth = 0;
-                    int send = 0;
-
-                    for (int i = 0; i < name.Length; i++)
-                    {
-                        if (name[i] == '(') pdepth++;
-                        else if (name[i] == ')')
-                        {
-                            pdepth--;
-
-                            if (pdepth == 0)
-                            {
-                                send = i;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (pdepth > 0) ErrorManager.Throw(ErrorType.Syntax, "All parenthesis must be closed");
+                    var ipe = ParseParenthesisEnd(name);
 
                     return new IfConditionNode
                     {
-                        Name = name.Substring(1,send-1).Trim(),
-                        Children = Iterate(name[(send+1)..] +';'),
+                        Name = name.Substring(1,ipe-1).Trim(),
+                        Children = Iterate(name[(ipe+1)..] +';'),
+                    };
+                case "while":
+                    ReturnAttrError(keyword, attribs.Length);
+
+                    if (!name.StartsWith('(')) ErrorManager.Throw(ErrorType.Syntax, "While condition must be inside parenthesis");
+
+                    var wpe = ParseParenthesisEnd(name);
+
+                    return new IfConditionNode
+                    {
+                        Name = name.Substring(1, wpe - 1).Trim(),
+                        Children = Iterate(name[(wpe + 1)..] + ';'),
                     };
                 case "else":
                     ReturnAttrError(keyword, attribs.Length);
@@ -210,6 +210,16 @@ namespace CinderLang
                         Name = name[1..^1],
                         Children = Iterate(buffer),
                     };
+                case "while":
+                    ReturnAttrError(keyword, attribs.Length);
+
+                    if (!name.StartsWith('(') || !name.EndsWith(')')) ErrorManager.Throw(ErrorType.Syntax, "While condition must be inside parenthesis");
+
+                    return new WhileLoopNode
+                    {
+                        Name = name[1..^1],
+                        Children = Iterate(buffer),
+                    };
                 case "else":
                     ReturnAttrError(keyword, attribs.Length);
 
@@ -224,6 +234,31 @@ namespace CinderLang
             }
 
             return null!;
+        }
+
+        static int ParseParenthesisEnd(string name)
+        {
+            int pdepth = 0;
+            int send = 0;
+
+            for (int i = 0; i < name.Length; i++)
+            {
+                if (name[i] == '(') pdepth++;
+                else if (name[i] == ')')
+                {
+                    pdepth--;
+
+                    if (pdepth == 0)
+                    {
+                        send = i;
+                        break;
+                    }
+                }
+            }
+
+            if (pdepth > 0) ErrorManager.Throw(ErrorType.Syntax, "All parenthesis must be closed");
+
+            return send;
         }
 
         static void ReturnAttrError(string kw,int lenght)

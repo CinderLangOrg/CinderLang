@@ -203,6 +203,17 @@ namespace CinderLang
             return d;
         }
 
+        public static IAstLooperNode ScanParents(IAstNode parent)
+        {
+            if (parent == null || parent is not IAstContainerNode)
+                ErrorManager.Throw(ErrorType.Syntax, "break statement must be nested inside a loop.");
+
+            (parent as IAstContainerNode)!.HasBreak = true;
+
+            if (parent is IAstLooperNode l) return l;
+            else return ScanParents((parent as IAstContainerNode)!.Parent);
+        }
+
         static IValue BuildComparison(IValue lhs, IValue rhs, string op, bool isSigned = true)
         {
             var predicate = op switch

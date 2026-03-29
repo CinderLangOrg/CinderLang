@@ -7,6 +7,8 @@ namespace Test.Conditions
 		bool a = true;
 
 		if (a == a) printf("True");
+		if (a) printf("Test");
+
 		else printf("False");
 	}
 }

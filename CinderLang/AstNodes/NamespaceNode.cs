@@ -17,6 +17,7 @@ namespace CinderLang.AstNodes
         public List<(IType, string, IValue)> ContextVariables { get; set; } = new();
         public List<FunctionDefinition> MethodDefinitions { get; set; } = new();
         public IAstContainerNode Parent { get; set; } = null;
+        public bool HasBreak { get; set; }
 
         public void Generate(IAstNode parent)
         {

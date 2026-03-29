@@ -8,16 +8,18 @@ using BackendInterface;
 
 namespace CinderLang.AstNodes
 {
-    public class ElseConditionNode : IAstConditionNode
+    public class ElseConditionNode : IAstBreakerNode
     {
         public string Name { get; set; }
         public IAstNode[] Children { get; set; }
+        public IBlock Block { get; set; }
         public IAstContainerNode Parent { get; set; }
         public IBlock ContinueBlock { get; set; }
 
         public IfConditionNode ifcond;
 
         public List<(IType,string,IValue)> ContextVariables { get; set; } = new();
+        public bool HasBreak { get; set; }
 
         public void Generate(IAstNode parent)
         {
@@ -47,14 +49,21 @@ namespace CinderLang.AstNodes
                 ifcond = cmp;
                 ContinueBlock = cmp.Else;
 
+                Block = ifcond.Else;
+
                 foreach (var item in Children)
                 {
                     Program.Builder.PositionAtHead(cmp.Else);
                     item.Generate(this);
+
+                    if (HasBreak) break;
                 }
 
-                Program.Builder.PositionAtEnd(ifcond.Else);
-                Program.Builder.BuildBr(ifcond.ContinueBlock);
+                if (!HasBreak)
+                {
+                    Program.Builder.PositionAtEnd(Block);
+                    Program.Builder.BuildBr(ifcond.ContinueBlock);
+                }
             }
             else ErrorManager.Throw(ErrorType.Syntax, "Else statement must be nested.");
         }

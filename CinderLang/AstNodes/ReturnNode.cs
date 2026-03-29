@@ -16,6 +16,8 @@ namespace CinderLang.AstNodes
             {
                 var method = MethodNode.CurrentMethod;
 
+                method.HasBreak = true;
+
                 if (method.Definition.ReturnType.Equals(Program.Builder.VoidType))
                 {
                     if (Name.Trim().Length > 0) ErrorManager.Throw(ErrorType.Syntax, $"Void returns cannot contain a value");

@@ -18,12 +18,16 @@ namespace CinderLang
         public List<(IType, string, IValue)> ContextVariables { get; set; }
 
         public IAstContainerNode Parent { get; set; }
+        public bool HasBreak { get; set; }
     }
 
-    public interface IAstConditionNode : IAstContainerNode
+    public interface IAstBreakerNode : IAstContainerNode
     {
+        public IBlock Block { get; set; }
         public IBlock ContinueBlock { get; set; }
     }
+
+    public interface IAstLooperNode : IAstBreakerNode {}
 
     public interface IAstAttributeContainerNode : IAstContainerNode
     {
