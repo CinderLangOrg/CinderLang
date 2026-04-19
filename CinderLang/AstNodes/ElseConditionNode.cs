@@ -56,6 +56,12 @@ namespace CinderLang.AstNodes
                     Program.Builder.PositionAtHead(cmp.Else);
                     item.Generate(this);
 
+                    if (MethodNode.CurrentMethod.HasBreak)
+                    {
+                        MethodNode.CurrentMethod.HasBreak = false;
+                        HasBreak = true;
+                    }
+
                     if (HasBreak) break;
                 }
 

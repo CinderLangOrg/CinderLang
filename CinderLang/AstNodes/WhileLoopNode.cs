@@ -48,10 +48,16 @@ namespace CinderLang.AstNodes
                     Program.Builder.PositionAtEnd(Block);
                     item.Generate(this);
 
+                    if (MethodNode.CurrentMethod.HasBreak)
+                    {
+                        MethodNode.CurrentMethod.HasBreak = false;
+                        HasBreak = true;
+                    }
+
                     if (HasBreak) break;
                 }
 
-                if (!Children.Any(x=> x is BreakerNode))
+                if (!Children.Any(x=> x is BreakerNode) && !HasBreak)
                 {
                     Program.Builder.PositionAtEnd(Block);
                     Program.Builder.BuildBr(CondBLock);

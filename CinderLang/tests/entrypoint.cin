@@ -11,8 +11,8 @@ namespace Test.EntryPoint
 			a = a - 1;
 
 			printf("loop! ");
-
-			break;
+			
+			return 0;
 		}
 
 		return 0;
