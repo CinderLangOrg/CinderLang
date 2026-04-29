@@ -60,6 +60,7 @@ namespace CinderLang
 
                     if (parencount == 0) continue;
                 }
+                else if ((!char.IsLetterOrDigit(name[i]) && !char.IsWhiteSpace(name[i])) && !hasreachedparents) ErrorManager.Throw(ErrorType.Syntax,"Only letters and digits are allowed in function names");
                 else if (rname.Trim().Length == 0 || !hasreachedparents) rname += name[i];
                 else if (parencount > 0 && name[i] == ',') generatearg();
                 else if (parencount > 0) typestring += name[i];
@@ -97,7 +98,7 @@ namespace CinderLang
             if (llvmt.Equals(Program.Builder.VoidType) && typeKnown) ErrorManager.Throw(ErrorType.Syntax, "Cannot assign a value to void type.");
 
             int parenIndex = value.IndexOf('(');
-            if (parenIndex > 0 && value.EndsWith(")"))
+            if (parenIndex > 0 && value.EndsWith(")") && !RawExprNode.OpList.Contains(value[..parenIndex].Trim().Last()))
             {
                 string fname = value[..parenIndex].Trim();
                 string argstr = value[(parenIndex + 1)..^1];

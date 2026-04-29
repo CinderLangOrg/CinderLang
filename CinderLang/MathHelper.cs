@@ -14,6 +14,7 @@ namespace CinderLang
             { "-", 1 },
             { "*", 2 },
             { "/", 2 },
+            { "%", 2 },
         };
 
         public static bool IsMathExpression(string value)
@@ -124,13 +125,28 @@ namespace CinderLang
                     continue;
                 }
 
-                var right = stack.Pop();
-                var left = stack.Pop();
+                if (stack.Count == 0) ErrorManager.Throw(ErrorType.Syntax,"Invalid math syntax");
 
-                stack.Push(EmitOp(token,left,right,type));
+                var right = stack.Pop();
+
+                if (stack.Count == 0) stack.Push(BuildNeg(right,type));
+                else
+                {
+                    var left = stack.Pop();
+
+                    stack.Push(EmitOp(token, left, right, type));
+                }       
             }
 
             return stack.Pop();
+        }
+
+        private static IValue BuildNeg(IValue a, IType type)
+        {
+            bool isFloat = type.Kind == TypeKind.FloatTypeKind ||
+                           type.Kind == TypeKind.DoubleTypeKind;
+
+            return isFloat ? Program.Builder.BuildFNeg(a) : Program.Builder.BuildSNeg(a);
         }
 
         private static IValue EmitOp(string op, IValue a, IValue b, IType type)
@@ -155,6 +171,10 @@ namespace CinderLang
                 "/" => isFloat
                     ? Program.Builder.BuildFDiv(a, b)
                     : Program.Builder.BuildSDiv(a, b),
+
+                "%" => isFloat
+                ? Program.Builder.BuildFRem(a, b)
+                : Program.Builder.BuildSRem(a, b),
 
                 _ => throw new Exception($"Unknown operator {op}")
             };

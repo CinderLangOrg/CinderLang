@@ -132,7 +132,14 @@ namespace LLVMBackend
             new LLVMValue(builder.BuildFDiv(LLVMValue.ToLLVM(a), LLVMValue.ToLLVM(b)));
         public IValue BuildSDiv(IValue a, IValue b, string name = "") =>
             new LLVMValue(builder.BuildSDiv(LLVMValue.ToLLVM(a), LLVMValue.ToLLVM(b)));
-
+        public IValue BuildFRem(IValue a, IValue b, string name = "") =>
+            new LLVMValue(builder.BuildFRem(LLVMValue.ToLLVM(a), LLVMValue.ToLLVM(b)));
+        public IValue BuildSRem(IValue a, IValue b, string name = "") =>
+            new LLVMValue(builder.BuildSRem(LLVMValue.ToLLVM(a), LLVMValue.ToLLVM(b)));
+        public IValue BuildFNeg(IValue a, string name = "") =>
+            new LLVMValue(builder.BuildFNeg(LLVMValue.ToLLVM(a), name));
+        public IValue BuildSNeg(IValue a, string name = "") =>
+            new LLVMValue(builder.BuildNeg(LLVMValue.ToLLVM(a),name));
         public IValue BuildGEP(IType t, IValue ptr, IValue[] values, string name = "") =>
             new LLVMValue(
                 builder.BuildGEP2(

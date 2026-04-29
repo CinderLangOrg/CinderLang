@@ -107,6 +107,9 @@ namespace CinderLang
                 else keyword += code[i];
             }
 
+            if (keyword != "")
+                ErrorManager.Throw(ErrorType.Syntax, $"End of statement expected after {keyword.Trim()}{name.Trim()}");
+
             return nodes.ToArray();
         }
 
@@ -152,7 +155,7 @@ namespace CinderLang
 
                     var wpe = ParseParenthesisEnd(name);
 
-                    return new IfConditionNode
+                    return new WhileLoopNode
                     {
                         Name = name.Substring(1, wpe - 1).Trim(),
                         Children = Iterate(name[(wpe + 1)..] + ';'),

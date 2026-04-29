@@ -2,7 +2,7 @@
   "profiles": {
     "CinderLang": {
       "commandName": "Project",
-      "commandLineArgs": "build tests/testproj.ciproj"
+      "commandLineArgs": "build tests/testproj.ciproj --saveir"
     }
   }
 }

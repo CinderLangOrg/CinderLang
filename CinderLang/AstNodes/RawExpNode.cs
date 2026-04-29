@@ -10,18 +10,34 @@ namespace CinderLang.AstNodes
     {
         public string Name { get; set; }
 
+        public static readonly char[] OpList = ['-', '+', '*', '/', '%'];
+
         public void Generate(IAstNode parent)
         {
+            if (Name.Trim().Length == 0) return;
+
             if (parent is IAstContainerNode method)
             {
                 var p = Name.Split('=', 2);
 
                 if (p.Length == 2)
                 {
+                    var name = p[0].Trim();
+                    var val = p[1].Trim();
+
+                    if (OpList.Contains(name.Last()))
+                    {
+                        var c = name.Last();
+
+                        name = name.Substring(0, name.Length - 1).Trim();
+
+                        val = $"{name} {c} ({val})";
+                    }
+                    
                     new AssignNode()
                     { 
-                        Name = p[0].Trim(),
-                        Value = p[1].Trim()
+                        Name = name,
+                        Value = val
                     }.Generate(method);
                 }
                 else GenerationHelpers.ParseValue(Name, Program.Builder.VoidType,method, false);
