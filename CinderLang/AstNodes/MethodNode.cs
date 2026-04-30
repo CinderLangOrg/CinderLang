@@ -33,10 +33,27 @@ namespace CinderLang.AstNodes
             {
                 Parent = ns;
 
+                string AdditionalContent = "";
+
+                if (Children == null && Name.Contains("=>"))
+                {
+                    var idx = Name.IndexOf("=>");
+
+                    var nname = Name.Substring(0, idx).Trim();
+                    AdditionalContent = Name.Substring(idx + 2).Trim() + ";";
+
+                    Name = nname;
+                }
+
+                Definition = GenerationHelpers.ParseFunctionDefinition(Name, !isextern, isvariadic);
+
+                var isVoid = Definition.ReturnType.Equals(Program.Builder.VoidType);
+
+                if (AdditionalContent != "")
+                    Children = Parser.Iterate((isVoid ? "" : "return ") + AdditionalContent);
+
                 if (Children != null && isextern) ErrorManager.Throw(ErrorType.Syntax, "Extern methods must not have a body");
                 if (Children == null && !isextern) ErrorManager.Throw(ErrorType.Syntax, "Non extern methods must have a body");
-
-                Definition = GenerationHelpers.ParseFunctionDefinition(Name,!isextern,isvariadic);
 
                 if (ns.MethodDefinitions.Any(x=>x.Name == Definition.Name)) ErrorManager.Throw(ErrorType.Syntax, $"Method with overload \"{Definition.Name}\" is already defined in namespace \"{ns.Name}\".");
 
@@ -67,7 +84,7 @@ namespace CinderLang.AstNodes
 
                     if (!HasBreak)
                     {
-                        if (Definition.ReturnType.Equals(Program.Builder.VoidType))
+                        if (isVoid)
                         {
                             Program.Builder.PositionAtEnd(Alignment);
                             Program.Builder.BuildVoidRet();

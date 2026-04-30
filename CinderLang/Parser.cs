@@ -28,7 +28,7 @@ namespace CinderLang
             return nodes;
         }
 
-        static IAstNode[] Iterate(string code)
+        public static IAstNode[] Iterate(string code)
         {
             List<IAstNode> nodes = new List<IAstNode>();
             
