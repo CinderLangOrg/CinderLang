@@ -18,6 +18,7 @@ namespace CinderLang
         public (IType llvmt, string name)[] Arguments { get; set; }
         public IType ReturnType { get; set; }
         public bool Variadic { get; set; }
+        public bool IsPrototype { get; set; }
     }
 
     public static class GenerationHelpers

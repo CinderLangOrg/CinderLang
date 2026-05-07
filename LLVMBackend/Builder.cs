@@ -35,7 +35,8 @@ namespace LLVMBackend
                 "",
                 LLVMCodeGenOptLevel.LLVMCodeGenLevelDefault,
                 LLVMRelocMode.LLVMRelocDefault,
-                LLVMCodeModel.LLVMCodeModelDefault);
+                LLVMCodeModel.LLVMCodeModelDefault
+            );
         }
 
         public IType Int32Type => new LLVMType(context.Int32Type);
@@ -140,6 +141,25 @@ namespace LLVMBackend
             new LLVMValue(builder.BuildFNeg(LLVMValue.ToLLVM(a), name));
         public IValue BuildSNeg(IValue a, string name = "") =>
             new LLVMValue(builder.BuildNeg(LLVMValue.ToLLVM(a),name));
+        
+        static unsafe sbyte* stringtosb(string st)
+        {
+            var bytes = Encoding.Default.GetBytes(st);
+            fixed (byte* ptr = bytes)
+                return (sbyte*)ptr;
+        }
+        
+        public unsafe IValue BuildInlineAsm(IType t,string intelasm, string constants)
+        {
+            return new LLVMValue(LLVM.GetInlineAsm(
+                LLVMType.ToLLVM(t),
+                stringtosb(intelasm), (nuint)intelasm.Length,
+                stringtosb(constants),(nuint)constants.Length,
+                1,0,
+                LLVMInlineAsmDialect.LLVMInlineAsmDialectIntel,
+                0
+            ));
+        }
         public IValue BuildGEP(IType t, IValue ptr, IValue[] values, string name = "") =>
             new LLVMValue(
                 builder.BuildGEP2(

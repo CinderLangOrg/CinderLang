@@ -2,8 +2,17 @@ namespace Test.EntryPoint
 {
 	variadic extern def printf(byte* data) : int;
 
+	def test();
+
 	def main() : int
 	{
+		asm {
+			mov eax, 5;
+			add eax, 5;
+		};
+
+		test();
+
 		int a = 10;
 
 		while(a > 0) printf("looping");
@@ -11,5 +20,10 @@ namespace Test.EntryPoint
 		printf("Did not crash");
 
 		return 0;
+	}
+
+	def test()
+	{
+		printf("after definition");
 	}
 }

@@ -42,6 +42,7 @@ namespace BackendInterface
         public IValue BuildSRem(IValue a, IValue b, string name = "");
         public IValue BuildSNeg(IValue a, string name = "");
         public IValue BuildFNeg(IValue a, string name = "");
+        public IValue BuildInlineAsm(IType t, string intelasm, string constants);
         public IValue BuildGEP(IType t, IValue ptr, IValue[] values, string name = "");
         public IValue BuildIntToPtr(IValue val, IType t, string name = "");
         public IValue BuildICmp(ComparationPredicate predicate, IValue a, IValue b, string name = "");

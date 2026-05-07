@@ -231,6 +231,13 @@ namespace CinderLang
                         Name = "",
                         Children = Iterate(name.Trim().Length > 0 ? name+" {"+buffer+'}' : buffer),
                     };
+                case "asm":
+                    ReturnAttrError(keyword, attribs.Length);
+
+                    return new AsmNode
+                    {
+                        Children = Iterate(buffer),
+                    };
                 default:
                     ErrorManager.Throw(ErrorType.Syntax, $"Invalid keyword \"{keyword}\"");
                     break;

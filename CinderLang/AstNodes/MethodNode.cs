@@ -45,7 +45,11 @@ namespace CinderLang.AstNodes
                     Name = nname;
                 }
 
-                Definition = GenerationHelpers.ParseFunctionDefinition(Name, !isextern, isvariadic);
+                bool isprototype = Children == null && !isextern;
+                var def = GenerationHelpers.ParseFunctionDefinition(Name, !isextern, isvariadic);
+                def.IsPrototype = isprototype;
+
+                Definition = def;
 
                 var isVoid = Definition.ReturnType.Equals(Program.Builder.VoidType);
 
@@ -53,12 +57,16 @@ namespace CinderLang.AstNodes
                     Children = Parser.Iterate((isVoid ? "" : "return ") + AdditionalContent);
 
                 if (Children != null && isextern) ErrorManager.Throw(ErrorType.Syntax, "Extern methods must not have a body");
-                if (Children == null && !isextern) ErrorManager.Throw(ErrorType.Syntax, "Non extern methods must have a body");
 
-                if (ns.MethodDefinitions.Any(x=>x.Name == Definition.Name)) ErrorManager.Throw(ErrorType.Syntax, $"Method with overload \"{Definition.Name}\" is already defined in namespace \"{ns.Name}\".");
+                if (ns.MethodDefinitions.Any(x=>x.Name == Definition.Name && !x.IsPrototype)) ErrorManager.Throw(ErrorType.Syntax, $"Method with overload \"{Definition.Name}\" is already defined in namespace \"{ns.Name}\".");
 
-                Function = ns.Module.AddFunction(Definition.Name,Definition.Signature,isextern);
+                if (!isprototype && ns.Module.GetNamedFunction(Definition.Name).Handle != IntPtr.Zero)
+                {
+                    Function = ns.Module.GetNamedFunction(Definition.Name);
+                }
+                else Function = ns.Module.AddFunction(Definition.Name, Definition.Signature, isextern);
 
+                ns.MethodDefinitions.RemoveAll(x => x.Name == Definition.Name && x.IsPrototype);
                 ns.MethodDefinitions.Add(Definition);
 
                 CurrentMethod = this;
@@ -70,7 +78,7 @@ namespace CinderLang.AstNodes
                     ContextVariables.Add((item.llvmt,item.name,Function.GetParam(i)));
                 }
 
-                if (!isextern)
+                if (!isextern && !isprototype)
                 {
                     Alignment = Function.AppendBasicBlock("start");
 
