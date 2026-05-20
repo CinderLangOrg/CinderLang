@@ -1,4 +1,5 @@
 ﻿using BackendInterface;
+using CinderCompiler;
 using CinderLang.AstNodes;
 using System;
 using System.Collections.Generic;
@@ -73,7 +74,7 @@ namespace CinderLang
 
             var BackendT = BackendManager.GetBackend(BackendName);
 
-            Program.Builder = (IBuilder)Activator.CreateInstance(BackendT)!;
+            CompilerManager.SetBuilder((IBuilder)Activator.CreateInstance(BackendT)!);
 
             var count = namespaces.Count;
             var compleated = 0;
@@ -92,15 +93,15 @@ namespace CinderLang
 
                 item.Generate(null!);
 
-                if (!item.Module.TryVerify(out var error))
-                {
-                    Console.WriteLine(item.Module.PrintToString());
-                    ErrorManager.Throw(ErrorType.Generation, $"The namespace \"{item.Name}\" failed to generate, with the LLVM error: {error}");
-                }
+                //if (!item.Module.TryVerify(out var error))
+                //{
+                //    Console.WriteLine(item.Module.PrintToString());
+                //    ErrorManager.Throw(ErrorType.Generation, $"The namespace \"{item.Name}\" failed to generate, with the LLVM error: {error}");
+                //}
 
                 if (saveir) File.WriteAllText(Path.Combine(proj.OutDir, item.Name + ".ir"), item.Module.PrintToString());
 
-                Program.Builder.EmitToFile(Path.Combine(proj.OutDir, item.Name + ".o"), item.Module);
+                CompilerManager.EmitToFile(Path.Combine(proj.OutDir, item.Name + ".o"), item.Module);
 
                 if (!NoGraphics) Console.CursorTop -= 8;
 

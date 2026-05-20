@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackendInterface", "Backend
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLVMBackend", "LLVMBackend\LLVMBackend.csproj", "{7D7CEC90-39E8-462F-9FD4-5C70BF487E5D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CinderCompiler", "CinderCompiler\CinderCompiler.csproj", "{119405FB-0B58-41F4-AB32-23C9F78E17C2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,8 +29,15 @@ Global
 		{7D7CEC90-39E8-462F-9FD4-5C70BF487E5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D7CEC90-39E8-462F-9FD4-5C70BF487E5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D7CEC90-39E8-462F-9FD4-5C70BF487E5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{119405FB-0B58-41F4-AB32-23C9F78E17C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{119405FB-0B58-41F4-AB32-23C9F78E17C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{119405FB-0B58-41F4-AB32-23C9F78E17C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{119405FB-0B58-41F4-AB32-23C9F78E17C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2F162DA1-92BD-48CB-9CE4-FD9D5F182606}
 	EndGlobalSection
 EndGlobal

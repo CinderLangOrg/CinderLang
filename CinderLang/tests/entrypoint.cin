@@ -1,29 +1,50 @@
 namespace Test.EntryPoint
 {
 	variadic extern def printf(byte* data) : int;
+	extern def putchar(int data) : int;
 
-	def test();
+	assembly def test(int value) : int;
+
+	def printint(int n)
+	{
+		if (n < 0)
+		{
+			putchar('-');
+			n = -n;
+		}
+
+		if (n >= 10) printint(n / 10);
+
+		putchar('0' + (n % 10));
+	}
 
 	def main() : int
 	{
-		asm {
+		int a = 0;
+
+		printint(a);
+
+		int b = asm {
 			mov eax, 5;
-			add eax, 5;
+
+			return eax;
 		};
 
-		test();
-
-		int a = 10;
-
-		while(a > 0) printf("looping");
+		while(a > 0)
+		{
+			a -= 1;
+			printf("looping");
+		}
 
 		printf("Did not crash");
 
 		return 0;
 	}
 
-	def test()
+	assembly def test(int value) : int
 	{
-		printf("after definition");
+		mov eax, $0;
+
+		return eax;
 	}
 }

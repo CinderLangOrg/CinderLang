@@ -8,8 +8,6 @@ namespace CinderLang
 {
     internal class Program
     {
-        public static IBuilder Builder { get; set; }
-
         static void Main(string[] args)
         {
             string[] patterns;

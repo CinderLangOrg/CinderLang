@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BackendInterface\BackendInterface.csproj" />
+    <ProjectReference Include="..\CinderCompiler\CinderCompiler.csproj" />
     <ProjectReference Include="..\LLVMBackend\LLVMBackend.csproj">
 		<Private>false</Private>
 		<ExcludeAssets>all</ExcludeAssets>
